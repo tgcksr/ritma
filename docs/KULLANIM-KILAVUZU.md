@@ -8,7 +8,9 @@ Bu belge üç soruya cevap verir:
 2. **Nasıl kurulur ve çalıştırılır?** (Bölüm 3–4)
 3. **Uygulama nasıl kullanılır?** Ekran ekran anlatım (Bölüm 5–6)
 
-Bunların yanında yapılandırma, sorun giderme ve bilinen sınırlamalar da vardır.
+Bunların yanında yapılandırma, sorun giderme, bilinen sınırlamalar ve Git/GitHub kullanımı da vardır.
+
+**GitHub deposu:** https://github.com/tgcksr/ritma
 
 ---
 
@@ -25,6 +27,7 @@ Bunların yanında yapılandırma, sorun giderme ve bilinen sınırlamalar da va
 9. [Klasör yapısı](#9-klasör-yapısı)
 10. [Sorun giderme](#10-sorun-giderme)
 11. [Bilinen sınırlamalar ve sonraki adımlar](#11-bilinen-sınırlamalar-ve-sonraki-adımlar)
+12. [Git ve GitHub](#12-git-ve-github)
 
 ---
 
@@ -420,8 +423,10 @@ Testler ayrı bir veritabanı (`prisma/test.db`) kullanır; gerçek verilerinize
 ```
 ritma/
 ├── package.json                 Kök: workspace tanımı ve ortak komutlar
+├── .gitignore, .gitattributes   Git ayarları (depoya girmeyen dosyalar, satır sonları)
 ├── README.md                    Kısa teknik özet
-├── docs/KULLANIM-KILAVUZU.md    Bu belge
+├── docs/KULLANIM-KILAVUZU.md    Bu belge (düzenlenebilir hali)
+├── docs/KULLANIM-KILAVUZU.pdf   Bu belgenin PDF hali
 │
 ├── packages/shared/src/
 │   ├── constants.ts             Randevu durumları ve izin verilen geçişler
@@ -495,3 +500,69 @@ Bu sürümde **olmayan** ve ileride eklenebilecek özellikler:
 | Karanlık tema | Yok. | Tailwind ile eklenebilir. |
 | Toplu dışa aktarma | Yok. | Müşteri listesi ve raporlar için Excel/CSV dışa aktarma. |
 | Büyük veri | Raporlar seçilen dönemi bellekte hesaplar; küçük ve orta ölçekli işletme için yeterli. | Çok yüksek hacimde veritabanı tarafında gruplama (SQL `GROUP BY`). |
+
+---
+
+## 12. Git ve GitHub
+
+Proje Git ile sürüm takibi altındadır ve GitHub'da **herkese açık** bir depoda durur:
+
+**https://github.com/tgcksr/ritma**
+
+### 12.1 Neler kuruldu ve ayarlandı
+
+| Öğe | Açıklama |
+|---|---|
+| **Git (MinGit)** | Git'in hafif, komut satırı sürümü. Normal Git kurulumu yönetici izni istediği için bu sürüm seçildi. Komut satırında tam çalışır; "Git Bash" uygulaması ve sağ tık menüsü kısayolları yoktur. |
+| **GitHub CLI (`gh`)** | GitHub hesabına giriş ve depo oluşturma aracı. Giriş bu bilgisayarda kayıtlıdır; tekrar giriş yapmanız gerekmez. |
+| **Commit yazarı** | `tgcksr`. E-posta olarak GitHub'ın gizli adresi (`…@users.noreply.github.com`) kullanılır, böylece gerçek e-postanız herkese açık görünmez. Bu ayar yalnızca bu proje için yapıldı. |
+| **`.gitignore`** | Depoya **girmeyen** dosyalar: `.env` (gizli anahtar), `*.db` (veritabanı), `node_modules`, `dist` (derleme çıktısı), `.claude/` ve `CLAUDE.md` (bilgisayara özel asistan dosyaları). |
+| **`.gitattributes`** | Satır sonlarını sabitler; dosyalar Windows ve diğer sistemlerde aynı kalır. |
+
+### 12.2 Değişiklikleri GitHub'a göndermek
+
+Kodda veya belgelerde değişiklik yaptıktan sonra proje klasöründe:
+
+```powershell
+cd C:\ritma
+git status                              # neyin değiştiğini görün
+git add -A                              # tüm değişiklikleri hazırlayın
+git commit -m "Ne değiştiğini kısaca yazın"
+git push                                # GitHub'a gönderin
+```
+
+Sık kullanılan diğer komutlar:
+
+| Komut | Ne yapar |
+|---|---|
+| `git log --oneline` | Geçmiş commit'leri listeler |
+| `git diff` | Henüz commit'lenmemiş değişiklikleri gösterir |
+| `git restore <dosya>` | Bir dosyadaki kaydedilmemiş değişiklikleri geri alır (⚠️ değişiklik kaybolur) |
+| `git pull` | GitHub'daki güncel hali bilgisayara çeker (başka bir bilgisayarda değişiklik yaptıysanız) |
+
+### 12.3 Projeyi başka bir bilgisayara indirmek
+
+```powershell
+git clone https://github.com/tgcksr/ritma.git
+cd ritma
+Copy-Item apps\api\.env.example apps\api\.env   # ardından JWT_SECRET'ı değiştirin (Bölüm 3.3)
+npm run setup
+npm run dev
+```
+
+`.env` ve veritabanı GitHub'da olmadığı için yeni bilgisayarda örnek verilerle boş bir kurulum oluşur. Mevcut verilerinizi taşımak için `apps\api\prisma\dev.db` dosyasını elle kopyalayın.
+
+### 12.4 Güvenlik notları
+
+- Depo **herkese açık**: Kodu herkes görebilir. Gizli bilgiler (`.env`) depoya girmez; bunu bozmamak için `.gitignore` dosyasından bu satırları silmeyin.
+- Demo giriş bilgileri (`admin@ritma.local` / `admin123`) README'de ve bu kılavuzda yazılıdır. Uygulamayı internete açacaksanız şifreyi mutlaka değiştirin (Bölüm 6).
+- GitHub CLI'a verilen yetkiyi istediğiniz zaman GitHub'da **Settings → Applications → Authorized OAuth Apps → GitHub CLI** bölümünden kaldırabilirsiniz.
+- Depoyu gizli yapmak için: GitHub'da depo sayfası → **Settings → General → Danger Zone → Change repository visibility**.
+
+### 12.5 Tam Git kurulumu (isteğe bağlı)
+
+Git Bash ve sağ tık menüsü kısayollarını isterseniz, yönetici izni penceresinde **Evet** diyerek tam sürümü kurabilirsiniz:
+
+```powershell
+winget install --id Git.Git -e
+```
